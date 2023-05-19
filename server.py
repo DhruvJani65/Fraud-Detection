@@ -2,6 +2,8 @@ import streamlit as st
 import pickle
 import pandas as pd
 import numpy as np
+# `st.title('Insurance Fraud Predictor')` is setting the title of the Streamlit web application to
+# "Insurance Fraud Predictor".
 st.title('Insurance Fraud Predictor')
 print('Successfully executed ')
 
@@ -16,13 +18,10 @@ def get_categorical_columns(df):
     for k, v in unique_values.items():
         if v <= threshold:
             categorical_columns.append(k)
-
     return categorical_columns
-    predictions= model.predict(df)
-    st.write(predictions)
+    
 
 def main():
-    st.title('Insurance Fraud Predictor')
     uploaded_file = st.file_uploader("Choose a file")
     if uploaded_file is not None:
         # Can be used wherever a "file-like" object is accepted:
@@ -47,7 +46,14 @@ def main():
         st.dataframe(dataframe)
         df= pd.get_dummies(dataframe, columns=categorical_columns)
         predictions= model.predict(df)
-        st.write(predictions)
+        predict_df = pd.DataFrame(columns=["CustomerID", "Fraud"])
+        predict_df["CustomerID"]= df["CustomerID"]
+        predict_df["Fraud"]= predictions
+        st.success(f"There are {len(df['CustomerID'])} Fraud Insurance Claims in your data.")
+        df= df.merge(predict_df[['CustomerID', 'Fraud']], on= 'CustomerID', how='left')
+        df['Fraud'] = df['Fraud'].fillna(False)
+        st.dataframe(df)
+        
         
 
 main()
